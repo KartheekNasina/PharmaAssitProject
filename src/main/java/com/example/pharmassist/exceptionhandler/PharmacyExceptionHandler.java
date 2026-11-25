@@ -1,5 +1,6 @@
 package com.example.pharmassist.exceptionhandler;
 
+import com.example.pharmassist.exception.DuplicateGstNumberException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -26,6 +27,27 @@ public class PharmacyExceptionHandler {
 
 	}
 
+	@ExceptionHandler(DuplicateGstNumberException.class)
+	public ResponseEntity<ErrorStructure<String>> handleDuplicateGstNumber(
+			DuplicateGstNumberException ex) {
+
+		return AppResponseBuilder.error(
+				HttpStatus.CONFLICT,
+				ex.getMessage(),
+				"Duplicate GST number"
+		);
+	}
+
+	@ExceptionHandler(AdminAlreadyHasPharmacyException.class)
+	public ResponseEntity<ErrorStructure<String>> handleAdminAlreadyHasPharmacy(
+			AdminAlreadyHasPharmacyException ex) {
+
+		return AppResponseBuilder.error(
+				HttpStatus.CONFLICT,
+				ex.getMessage(),
+				"Admin already has a pharmacy"
+		);
+	}
 	
 
 }

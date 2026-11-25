@@ -2,9 +2,7 @@ package com.example.pharmassist.entity;
 
 import com.example.pharmassist.config.GenerateCustomId;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 
 @Entity
 public class Admin {
@@ -14,10 +12,14 @@ public class Admin {
 	private String adminEmail;
 	private String adminPhoneNumber;
 	private String adminPassword;
-	
-	
+
+
 	@OneToOne
+	@JoinColumn(name = "pharmacy_id", unique = true)
 	private Pharmacy pharmacy;
+
+	@Version
+	private Long version;
 
 	public Pharmacy getPharmacy() {
 		return pharmacy;

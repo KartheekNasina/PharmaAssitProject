@@ -4,10 +4,7 @@ import java.util.List;
 
 import com.example.pharmassist.config.GenerateCustomId;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 
 @Entity
 public class Pharmacy 
@@ -16,6 +13,7 @@ public class Pharmacy
 	@GenerateCustomId
 	private String pharmacyId;
 	private String name;
+	@Column(unique = true)
 	private String gstNo;
 	private String licenceNo;
 

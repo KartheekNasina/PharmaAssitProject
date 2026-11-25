@@ -1,5 +1,7 @@
 package com.example.pharmassist.service;
 
+import com.example.pharmassist.exception.DuplicateGstNumberException;
+import com.example.pharmassist.exceptionhandler.AdminAlreadyHasPharmacyException;
 import org.springframework.stereotype.Service;
 
 import com.example.pharmassist.entity.Admin;
@@ -13,6 +15,7 @@ import com.example.pharmassist.repository.PharmacyRepository;
 import com.example.pharmassist.requestdtos.PharmacyRequest;
 import com.example.pharmassist.responsedtos.PharmacyResponse;
 import com.example.pharmassist.util.AppResponseBuilder;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service
@@ -28,16 +31,27 @@ public class PharmacyService
 		this.pharmacyMapper=pharmacyMapper;
 		this.adminRepository=adminRepository;
 	}
-
+	@Transactional
 	public PharmacyResponse addPharmacy(PharmacyRequest pharmacyRequest,String adminId)
 	{
 		return adminRepository.findById(adminId)
-				.map( admin ->{
-					Pharmacy pharmacy=pharmacyMapper.mapToPharmacy(pharmacyRequest, new Pharmacy());
-					pharmacy=pharmacyRepository.save(pharmacy);
+				.map(admin -> {
+					if (pharmacyRepository.existsByGstNo(pharmacyRequest.getGstNo())) {
+						throw new DuplicateGstNumberException("Pharmacy with this GST number already exists");
+					}
+
+					if (admin.getPharmacy() != null) {
+						throw new AdminAlreadyHasPharmacyException(
+								"Admin already has a pharmacy");
+					}
+
+					Pharmacy pharmacy = pharmacyMapper.mapToPharmacy(pharmacyRequest, new Pharmacy());
+					pharmacy = pharmacyRepository.save(pharmacy);
+
 					admin.setPharmacy(pharmacy);
 					adminRepository.save(admin);
-					return pharmacyMapper.mapToPharmacyResponse(pharmacy);				
+
+					return pharmacyMapper.mapToPharmacyResponse(pharmacy);
 				})
 				.orElseThrow(() ->new AdminNotFoundByIdException("Failed to find Admin"));
 	}
@@ -64,7 +78,12 @@ public class PharmacyService
 	public PharmacyResponse updatePharmacy(PharmacyRequest pharmacyRequest,String pharmacyId)
 	{
 		return pharmacyRepository.findById(pharmacyId)
-				.map(exPharmacy ->{
+				.map(exPharmacy -> {
+					if (pharmacyRepository.existsByGstNoAndPharmacyIdNot(
+							pharmacyRequest.getGstNo(), pharmacyId)) {
+						throw new DuplicateGstNumberException("Another pharmacy already uses this GST number");
+					}
+
 					pharmacyMapper.mapToPharmacy(pharmacyRequest, exPharmacy);
 					return pharmacyRepository.save(exPharmacy);
 				})

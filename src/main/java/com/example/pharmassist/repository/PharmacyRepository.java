@@ -6,6 +6,10 @@ import org.springframework.stereotype.Repository;
 import com.example.pharmassist.entity.Pharmacy;
 
 @Repository
-public interface PharmacyRepository extends JpaRepository<Pharmacy, String>{
+public interface PharmacyRepository extends JpaRepository<Pharmacy, String> {
+
+    boolean existsByGstNo(String gstNo);
+
+    boolean existsByGstNoAndPharmacyIdNot(String gstNo, String pharmacyId);
 
 }
